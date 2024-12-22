@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Creativity Evaluator",
+  "version": "1.0",
+  "description": "Evaluate words for creativity challenge submissions.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["https://www.minerva.edu/evaluate/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.minerva.edu/evaluate/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
