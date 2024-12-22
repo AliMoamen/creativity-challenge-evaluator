@@ -1,14 +1,7 @@
 console.log("Creativity Evaluator Loaded!");
 
 // API Default Config
-const baseURL = "https://wordsapiv1.p.rapidapi.com/words/";
-const apiOptions = {
-  method: "GET",
-  headers: {
-    "x-rapidapi-key": "6771ca7274msh08548fc81139e73p12b34djsn71e25d88d233",
-    "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
-  },
-};
+const baseURL = "https://api.dictionaryapi.dev/api/v2/entries/en/";
 
 // Collect all input elements for words
 const wordInputs = document.querySelectorAll(
@@ -22,40 +15,64 @@ for (const wordInput of wordInputs) {
     id: wordInput.dataset.reactid,
   });
 }
-console.log(submittedWords);
 
-// Get Word Text Of Speech
-async function getWordSpeech(word) {
+// Get Word Definitions and Part of Speech
+async function getWordDefinitions(word) {
   try {
-    const response = await fetch(baseURL + `${word}/definitions`, apiOptions);
-    if (response.status === 404) {
-      console.error(`Word "${word}" not found.`);
-      return [];
-    }
-    if (response.status !== 200) {
-      console.error(`Error: Received status code ${response.status}`);
-      return [];
-    }
+    const response = await fetch(baseURL + `${word}`);
     const result = await response.json();
-    return result;
+    let meaningsOutput = [];
+    const sources = new Set();
+
+    // Ensure result contains meanings and sourceUrls
+    for (const { meanings, sourceUrls } of result) {
+      if (meanings && Array.isArray(meanings)) {
+        meaningsOutput = [...meanings, ...meaningsOutput];
+      }
+      if (sourceUrls && Array.isArray(sourceUrls)) {
+        for (const url of sourceUrls) {
+          sources.add(url);
+        }
+      }
+    }
+    return { meaningsOutput, sources: [...sources] };
   } catch (err) {
     console.error(`Error Fetching Data: ${err}`);
-    return [];
+    return { meaningsOutput: [], sources: [] };
   }
 }
 
 // Get Submitted Words Text of Speech
 async function getSubmittedWordsSpeech(submittedWords) {
   const promises = submittedWords.map(async ({ word, id }) => {
-    const { definitions, word: matchedWord } = await getWordSpeech(word);
-    if (!definitions || !matchedWord) {
-      return { word, id, matchedWord: "", partOfSpeech: [] };
+    const { meaningsOutput: meanings, sources } = await getWordDefinitions(
+      word
+    );
+    let isNoun = false;
+    const isPlural = sources.length > 1;
+
+    if (!meanings.length) {
+      return {
+        word,
+        id,
+        partOfSpeech: [],
+        sources: [],
+        isNoun: false,
+        isPlural: false,
+      };
     }
+
     const speech = new Set();
-    for (const { partOfSpeech } of definitions) {
-      speech.add(partOfSpeech);
+    for (const { partOfSpeech } of meanings) {
+      if (partOfSpeech) {
+        speech.add(partOfSpeech);
+        if (partOfSpeech === "noun") {
+          isNoun = true;
+        }
+      }
     }
-    return { word, id, matchedWord, partOfSpeech: [...speech] };
+
+    return { word, id, sources, partOfSpeech: [...speech], isNoun, isPlural };
   });
 
   const res = await Promise.all(promises);
@@ -63,5 +80,4 @@ async function getSubmittedWordsSpeech(submittedWords) {
 
   return res;
 }
-
-console.log(getSubmittedWordsSpeech(submittedWords));
+getSubmittedWordsSpeech(submittedWords);
