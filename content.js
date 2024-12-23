@@ -1,5 +1,3 @@
-console.log("Creativity Evaluator Loaded!");
-
 // API Default Config
 const baseURL = "https://api.dictionaryapi.dev/api/v2/entries/en/";
 
