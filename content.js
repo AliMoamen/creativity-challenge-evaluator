@@ -154,13 +154,13 @@ async function getSubmittedWordsSpeech(submittedWords) {
 // Render Submitted Words Based on Speech
 async function renderSubmittedWords() {
   const submittedWordsSpeech = await getSubmittedWordsSpeech(submittedWords);
-  const wordCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+  // const wordCheckboxes = document.querySelectorAll('input[type="checkbox"]');
   let currWord = 0;
   for (const { id, isNoun, isPlural } of submittedWordsSpeech) {
     const wordInput = document.querySelector(
       `input[type="text"][data-reactid="${id}"]`
     );
-    const wordCheckbox = wordCheckboxes[currWord];
+    // const wordCheckbox = wordCheckboxes[currWord];
     wordInput.style =
       isNoun && !isPlural
         ? "border-color: #28a745"
@@ -168,7 +168,7 @@ async function renderSubmittedWords() {
         ? "border-color: #ffc107"
         : "border-color: #dc3545";
 
-    wordCheckbox.checked = !isNoun && !isPlural;
+    // wordCheckbox.checked = !isNoun && !isPlural;
     currWord += 1;
   }
 }
